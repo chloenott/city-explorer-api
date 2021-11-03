@@ -17,7 +17,7 @@ function handleWeather(request, response) {
     let input = {
         lat: Number(request.query.lat),
         lon: Number(request.query.lon),
-        searchQuery: request.query.searchQuery
+        searchQuery: request.query.searchQuery || ''
     }
 
     let weatherAtCity = weather.find( weatherObj => findCity(weatherObj, input) );
