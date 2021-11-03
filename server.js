@@ -45,6 +45,11 @@ function findByCoordinates(weatherObj, lat, lon) {
     return checkLat && checkLon;
 }
 
+function handleError(request, response) {
+    response.status(403).send('Not found.')
+}
+
 app.use(cors())
 app.get('/weather', handleWeather );
+app.get('/*', handleError )
 app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT}`) );
