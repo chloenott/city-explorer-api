@@ -6,8 +6,12 @@ const cors = require('cors');
 const weather = require('./data/weather.json');
 const app = express()
 
-app.use(cors())
-app.get('/weather', handleWeather );
+class Forecast {
+    constructor(date, description) {
+        this.date = date;
+        this.description = description;
+    }
+}
 
 function handleWeather(request, response) {
     let input = {
@@ -17,8 +21,14 @@ function handleWeather(request, response) {
     }
 
     let weatherAtCity = weather.find( weatherObj => findCity(weatherObj, input) );
-    console.log(weatherAtCity || "Error: Cound not find weather data.")
-    return response.status(200).send(weatherAtCity) || response.status(400).send('Could not find weather data.');
+
+    let forecasts = weatherAtCity && weatherAtCity.data.map( forecast => {
+        let date = forecast.datetime;
+        let description = `Low of ${forecast.low_temp}, high of ${forecast.high_temp} with ${forecast.weather.description}`;
+        return new Forecast(date, description);
+    });
+
+    return weatherAtCity ? response.status(200).send(forecasts) : response.status(400).send('Unable to find weather data.');
 }
 
 function findCity(weatherObj, input) {
@@ -35,4 +45,6 @@ function findByCoordinates(weatherObj, lat, lon) {
     return checkLat && checkLon;
 }
 
+app.use(cors())
+app.get('/weather', handleWeather );
 app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT}`) );
