@@ -46,7 +46,7 @@ function findByCoordinates(weatherObj, lat, lon) {
 }
 
 function handleError(request, response) {
-    response.status(403).send('Not found.')
+    response.status(500).send('Not found.')
 }
 
 app.use(cors())
