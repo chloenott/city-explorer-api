@@ -14,6 +14,18 @@ class Forecast {
     }
 }
 
+class Movie {
+    constructor({title, overview, average_votes, total_votes, image_url, popularity, released_on}) {
+        this.title = title;
+        this.overview = overview;
+        this.average_votes = average_votes;
+        this.total_votes = total_votes;
+        this.image_url = image_url;
+        this.popularity = popularity;
+        this.released_on = released_on;
+    }
+}
+
 async function handleWeather(request, response) {
     try {
         let input = {
@@ -29,18 +41,35 @@ async function handleWeather(request, response) {
             return new Forecast(date, description);
         });
 
-        return response.status(200).send(forecasts);
+        return forecasts.length ? response.status(200).send(forecasts) : response.status(404).send('Unable to find weather data.');
 
     } catch {
-        return response.status(404).send('Unable to find weather data.')
+        return response.status(404).send('Unable to find weather data.');
+    }
+}
+
+async function handleMovies(request, response) {
+    try {
+        let input = request.query.city;
+        const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&language=en-US&query=${input}&page=1&include_adult=false`;
+        const results = await axios.get(url);
+        let movies = results.data.results.map( movie => {
+            return new Movie(movie);
+        });
+
+        return movies.length ? response.status(200).send(movies) : response.status(404).send('Unable to find movie data.');
+
+    } catch {
+        return response.status(404).send('Unable to find movie data.');
     }
 }
 
 function handleError(request, response) {
-    response.status(404).send('Not found.')
+    response.status(404).send('Not found.');
 }
 
-app.use(cors())
-app.get('/weather', handleWeather );
-app.get('/*', handleError )
+app.use(cors());
+app.get('/weather', handleWeather);
+app.get('/movies', handleMovies);
+app.get('/*', handleError);
 app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT}`) );
