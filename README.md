@@ -5,7 +5,7 @@
 
 ## Overview
 
-An API to be used with the City Explorer app. It provides information for weather forecast, movie scheduel, city location, and possibly more.
+An API to be used with the City Explorer app. It provides information for weather forecast, relevant movies, city location, and possibly more.
 
 ## Getting Started
 
@@ -18,5 +18,6 @@ Uses nodejs, express, and cors and communication with other APIs to provide data
 ## Change Log
 
 11-2-21: Initial release that uses sample weather data.
+11-3-21: Added connecitions to movie and weather APIs.
 
 ## Credit and Collaborations
