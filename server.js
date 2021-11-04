@@ -3,8 +3,9 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const weather = require('./data/weather.json');
-const app = express()
+const axios = require('axios');
+
+const app = express();
 
 class Forecast {
     constructor(date, description) {
@@ -13,43 +14,62 @@ class Forecast {
     }
 }
 
-function handleWeather(request, response) {
-    let input = {
-        lat: Number(request.query.lat),
-        lon: Number(request.query.lon),
-        searchQuery: request.query.searchQuery || ''
+class Movie {
+    constructor({title, overview, vote_average, vote_count, original_language, popularity, released_date}) {
+        this.title = title;
+        this.overview = overview;
+        this.vote_average = vote_average;
+        this.vote_count = vote_count;
+        this.original_language = original_language;
+        this.popularity = popularity;
+        this.released_date = released_date;
     }
-
-    let weatherAtCity = weather.find( weatherObj => findCity(weatherObj, input) );
-
-    let forecasts = weatherAtCity && weatherAtCity.data.map( forecast => {
-        let date = forecast.datetime;
-        let description = `Low of ${forecast.low_temp}, high of ${forecast.high_temp} with ${forecast.weather.description}`;
-        return new Forecast(date, description);
-    });
-
-    return weatherAtCity ? response.status(200).send(forecasts) : response.status(400).send('Unable to find weather data.');
 }
 
-function findCity(weatherObj, input) {
-    return findByCityName(weatherObj, input.searchQuery) || findByCoordinates(weatherObj, input.lat, input.lon);
+async function handleWeather(request, response) {
+    try {
+        let input = {
+            lat: request.query.lat,
+            lon: request.query.lon
+        }
+
+        const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${input.lat}&lon=${input.lon}&key=${process.env.WEATHER_API_KEY}`;
+        const results = await axios.get(url);
+        let forecasts = results.data.data.map( forecast => {
+            let date = forecast.datetime;
+            let description = `Low of ${forecast.low_temp}, high of ${forecast.high_temp} with ${forecast.weather.description}`;
+            return new Forecast(date, description);
+        });
+
+        return forecasts.length ? response.status(200).send(forecasts) : response.status(404).send('Unable to find weather data.');
+
+    } catch {
+        return response.status(404).send('Unable to find weather data.');
+    }
 }
 
-function findByCityName(weatherObj, cityName) {
-    return weatherObj.city_name.toLowerCase() === cityName.toLowerCase();
-}
+async function handleMovies(request, response) {
+    try {
+        let input = request.query.city;
+        const url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&language=en-US&query=${input}&page=1&include_adult=false`;
+        const results = await axios.get(url);
+        let movies = results.data.results.map( movie => {
+            return new Movie(movie);
+        });
 
-function findByCoordinates(weatherObj, lat, lon) {
-    let checkLat = Math.abs(Number(weatherObj.lat) - lat) < 0.1
-    let checkLon = Math.abs(Number(weatherObj.lon) - lon) < 0.1;
-    return checkLat && checkLon;
+        return movies.length ? response.status(200).send(movies) : response.status(404).send('Unable to find movie data.');
+
+    } catch {
+        return response.status(404).send('Unable to find movie data.');
+    }
 }
 
 function handleError(request, response) {
-    response.status(500).send('Not found.')
+    response.status(404).send('Not found.');
 }
 
-app.use(cors())
-app.get('/weather', handleWeather );
-app.get('/*', handleError )
+app.use(cors());
+app.get('/weather', handleWeather);
+app.get('/movies', handleMovies);
+app.get('/*', handleError);
 app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT}`) );
