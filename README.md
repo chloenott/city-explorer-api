@@ -1,7 +1,7 @@
 # City Explorer API
 
 **Author**: Chloe Nott
-**Version**: 1.0.0
+**Version**: 1.2.0
 
 ## Overview
 
@@ -19,5 +19,6 @@ Uses nodejs, express, and cors and communication with other APIs to provide data
 
 11-2-21: Initial release that uses sample weather data.
 11-3-21: Added connecitions to movie and weather APIs.
+11-4-21: Modularized code.
 
 ## Credit and Collaborations
