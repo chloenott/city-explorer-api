@@ -8,6 +8,8 @@ const weather = require('./modules/weather.js');
 const movie = require('./modules/movies.js');
 const app = express();
 
+app.use(cors());
+
 app.get('/weather', weatherHandler);
 app.get('/movies', movieHandler);
 app.get('/*', handleError);
