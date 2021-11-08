@@ -25,8 +25,8 @@ function weatherHandler(request, response) {
 }
 
 function movieHandler(request, response) {
-    const { input } = request.query;
-    movie(input)
+    const { city } = request.query;
+    movie(city)
     .then(summaries => response.send(summaries))
     .catch((error) => {
       console.error(error);
